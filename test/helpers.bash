@@ -2,17 +2,20 @@
 #
 # Unit test helpers for plugins built from tmux-plugin-template.
 #
-# Provides a mock tmux that keeps options in an in-memory associative array, so
-# the cache layer can be tested end to end without a real tmux server. Time is
-# mocked so cache ages are deterministic.
+# Provides a mock tmux that keeps options in a temp directory, one file per
+# option. A directory store works on Bash 3.2, which is what macOS ships, and it
+# survives subshells, so values set inside a bats `run` are visible afterwards.
+# Time is mocked so cache ages are deterministic.
 
 setup_test_environment() {
   TEST_TMPDIR=$(mktemp -d)
   export TEST_TMPDIR
   export TMUX_TEST_MODE=1
 
-  # In-memory tmux option store. Reset per test for isolation.
-  declare -gA _MOCK_TMUX_OPTS=()
+  # On-disk tmux option store. Reset per test for isolation.
+  MOCK_OPTS_DIR="${TEST_TMPDIR}/opts"
+  export MOCK_OPTS_DIR
+  mkdir -p "${MOCK_OPTS_DIR}"
 
   # Deterministic clock. Tests advance MOCK_EPOCH to simulate elapsed time.
   export MOCK_EPOCH=1000000
@@ -27,13 +30,17 @@ setup_test_environment() {
 }
 
 cleanup_test_environment() {
-  if [[ -n "${TEST_TMPDIR:-}" && -d "${TEST_TMPDIR}" ]]; then
+  if [ -n "${TEST_TMPDIR:-}" ] && [ -d "${TEST_TMPDIR}" ]; then
     rm -rf "${TEST_TMPDIR}"
   fi
 }
 
-# Mock tmux: only the option verbs the libraries use. set-option writes the
-# in-memory store, show-option reads it. Everything else is a no-op success.
+_mock_opt_file() {
+  printf '%s/%s' "${MOCK_OPTS_DIR}" "$(printf '%s' "$1" | tr -c 'A-Za-z0-9_.-' '_')"
+}
+
+# Mock tmux: only the option verbs the libraries use. set-option writes a file,
+# show-option reads it. Everything else is a no-op success.
 tmux() {
   local verb="$1"
   shift || true
@@ -41,7 +48,7 @@ tmux() {
     set-option)
       local unset_flag=0
       local args=()
-      while [[ $# -gt 0 ]]; do
+      while [ $# -gt 0 ]; do
         case "$1" in
           -gqu|-gu|-u) unset_flag=1 ;;
           -g|-q|-w|-p|-gq|-wq|-pq|-ga|-wqv|-gqv) ;;
@@ -51,17 +58,19 @@ tmux() {
         shift
       done
       local name="${args[0]:-}"
-      [[ -z "${name}" ]] && return 0
-      if (( unset_flag )); then
-        unset '_MOCK_TMUX_OPTS[${name}]'
+      [ -z "${name}" ] && return 0
+      local file
+      file="$(_mock_opt_file "${name}")"
+      if [ "${unset_flag}" -eq 1 ]; then
+        rm -f "${file}"
       else
-        _MOCK_TMUX_OPTS["${name}"]="${args[1]:-}"
+        printf '%s' "${args[1]:-}" > "${file}"
       fi
       return 0
       ;;
     show-option)
       local name=""
-      while [[ $# -gt 0 ]]; do
+      while [ $# -gt 0 ]; do
         case "$1" in
           -gqv|-wqv|-pqv|-gq|-g|-q|-w|-p) ;;
           -t) shift ;;
@@ -69,7 +78,9 @@ tmux() {
         esac
         shift
       done
-      echo "${_MOCK_TMUX_OPTS[${name}]:-}"
+      local file
+      file="$(_mock_opt_file "${name}")"
+      [ -f "${file}" ] && cat "${file}"
       return 0
       ;;
     *)
@@ -93,8 +104,9 @@ function_exists() {
 }
 
 variable_exists() {
-  [[ -n "${!1:-}" ]]
+  [ -n "${!1:-}" ]
 }
 
+export -f _mock_opt_file
 export -f tmux
 export -f date

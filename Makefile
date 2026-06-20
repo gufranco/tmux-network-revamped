@@ -20,9 +20,9 @@ coverage: ## Measure line coverage with kcov and enforce COVERAGE_MIN (Linux)
 	@command -v kcov >/dev/null 2>&1 || { \
 		echo "kcov is not installed. On Ubuntu: sudo apt-get install -y kcov"; exit 1; }
 	@rm -rf coverage
-	@$(KCOV) --include-path=src --clean coverage "$(BATS)" --recursive test/ >/dev/null
-	@percent=$$(python3 -c "import json,glob,sys; \
-files=glob.glob('coverage/*/coverage.json'); \
+	@$(KCOV) --include-path=$(CURDIR)/src coverage "$(BATS)" --recursive test/ >/dev/null
+	@percent=$$(python3 -c "import json,glob; \
+files=glob.glob('coverage/kcov-merged/coverage.json') or glob.glob('coverage/*/coverage.json'); \
 data=json.load(open(sorted(files)[-1])) if files else {}; \
 print(data.get('percent_covered', '0'))"); \
 	echo "Line coverage: $$percent% (min $(COVERAGE_MIN)%)"; \
