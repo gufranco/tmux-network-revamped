@@ -5,6 +5,15 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-06-20
+
+### Added
+
+- VPN interface `#{net_vpn}` and established-connection count `#{net_connections}`,
+  both from cheap local probes that always run.
+- Opt-in `#{net_ping}` latency and `#{net_public_ip}`, gated behind options since
+  they make network calls, and run only inside the background worker.
+
 ## [1.0.0] - 2026-06-19
 
 ### Added

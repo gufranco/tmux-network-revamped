@@ -51,9 +51,18 @@ net_render_bg() {
   get_tmux_option "@net_revamped_$(_net_total_level "${1}")_bg_color" ""
 }
 
+net_render_ping() {
+  [[ -z "${1}" ]] && { echo ""; return 0; }
+  local fmt
+  fmt=$(get_tmux_option "@net_revamped_ping_format" "%sms")
+  # shellcheck disable=SC2059
+  printf "${fmt}" "${1}"
+}
+
 export -f _net_level
 export -f _net_total_level
 export -f net_render_text
+export -f net_render_ping
 export -f net_render_speed
 export -f net_render_fg
 export -f net_render_bg

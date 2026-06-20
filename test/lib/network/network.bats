@@ -80,3 +80,75 @@ teardown() {
 @test "network.sh - read_counters is empty for an empty interface" {
   [[ -z "$(read_counters "")" ]]
 }
+
+@test "network.sh - ping_ms_from_output extracts milliseconds" {
+  [[ "$(ping_ms_from_output '64 bytes from 8.8.8.8: icmp_seq=0 ttl=116 time=12.3 ms')" == "12" ]]
+  [[ -z "$(ping_ms_from_output 'no reply')" ]]
+}
+
+@test "network.sh - count_established counts connections" {
+  local txt=$'tcp 0 0 a b ESTABLISHED\ntcp 0 0 c d LISTEN\ntcp 0 0 e f ESTABLISHED'
+  [[ "$(count_established "${txt}")" == "2" ]]
+}
+
+@test "network.sh - valid_ipv4 validates an address" {
+  [[ "$(valid_ipv4 '203.0.113.7')" == "203.0.113.7" ]]
+  [[ "$(valid_ipv4 '203.0.113.7 ')" == "203.0.113.7" ]]
+  [[ -z "$(valid_ipv4 'not-an-ip')" ]]
+}
+
+@test "network.sh - vpn_from_links_linux finds a tunnel interface" {
+  [[ "$(vpn_from_links_linux '5: tun0: <UP> mtu 1500')" == "tun0" ]]
+  [[ "$(vpn_from_links_linux '6: wg0: <UP>')" == "wg0" ]]
+}
+
+@test "network.sh - vpn_from_routes_macos finds a utun interface" {
+  [[ "$(vpn_from_routes_macos 'default 10.0.0.1 UGScg utun3')" == "utun3" ]]
+}
+
+@test "network.sh - read_ping reads ping on Linux" {
+  _PLATFORM_OS_CACHE="Linux"
+  _read_ping_linux() { echo "64 bytes from 8.8.8.8: time=9.8 ms"; }
+  [[ "$(read_ping)" == "9" ]]
+}
+
+@test "network.sh - read_ping reads ping on macOS" {
+  _PLATFORM_OS_CACHE="Darwin"
+  _read_ping_macos() { echo "64 bytes from 8.8.8.8: time=15.2 ms"; }
+  [[ "$(read_ping)" == "15" ]]
+}
+
+@test "network.sh - read_connections counts established" {
+  _read_netstat_an() { printf 'a ESTABLISHED\nb ESTABLISHED\nc LISTEN\n'; }
+  [[ "$(read_connections)" == "2" ]]
+}
+
+@test "network.sh - read_public_ip validates the response" {
+  _read_public_ip() { echo "198.51.100.9"; }
+  [[ "$(read_public_ip)" == "198.51.100.9" ]]
+}
+
+@test "network.sh - read_vpn reads routes on macOS" {
+  _PLATFORM_OS_CACHE="Darwin"
+  _read_route_table() { echo "default 10.0.0.1 UGScg utun4"; }
+  [[ "$(read_vpn)" == "utun4" ]]
+}
+
+@test "network.sh - read_vpn reads links on Linux" {
+  _PLATFORM_OS_CACHE="Linux"
+  _read_ip_links() { echo "7: wg0: <UP>"; }
+  [[ "$(read_vpn)" == "wg0" ]]
+}
+
+@test "network.sh - host-probe seams are callable" {
+  run _read_proc_net_dev
+  run _read_netstat
+  run _read_netstat_an
+  run _read_ping_linux
+  run _read_ping_macos
+  run _read_ip_links
+  run _read_route_table
+  run _default_iface_linux
+  run _default_iface_macos
+  true
+}

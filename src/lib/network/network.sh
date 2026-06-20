@@ -51,8 +51,68 @@ net_format_rate() {
   }'
 }
 
+# ping_ms_from_output TEXT -> integer milliseconds from a ping reply line.
+ping_ms_from_output() {
+  printf '%s\n' "${1}" | grep -m1 'time=' | sed -E 's/.*time=([0-9.]+).*/\1/' | cut -d. -f1
+}
+
+# count_established TEXT -> number of ESTABLISHED connections in netstat output.
+count_established() {
+  printf '%s\n' "${1}" | grep -c 'ESTABLISHED'
+}
+
+# valid_ipv4 TEXT -> the input when it is a dotted IPv4 address, else empty.
+valid_ipv4() {
+  local ip="${1%%[[:space:]]*}"
+  [[ "${ip}" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo "${ip}"
+}
+
+# vpn_from_links_linux TEXT -> first VPN interface from `ip -o link show up`.
+vpn_from_links_linux() {
+  printf '%s\n' "${1}" | grep -oE '(tun|tap|wg|ppp|nordlynx|tailscale)[0-9]*' | head -1
+}
+
+# vpn_from_routes_macos TEXT -> first VPN interface from `netstat -rn`.
+vpn_from_routes_macos() {
+  printf '%s\n' "${1}" | grep -oE '(utun|tun|tap|ipsec|ppp)[0-9]+' | head -1
+}
+
 # Host-probe seams.
 _read_proc_net_dev() { cat /proc/net/dev 2>/dev/null; }
+_read_ping_linux() { ping -c 1 -w 1 8.8.8.8 2>/dev/null; }
+_read_ping_macos() { ping -c 1 -t 1 8.8.8.8 2>/dev/null; }
+_read_netstat_an() { netstat -an 2>/dev/null; }
+_read_public_ip() { curl -sf --connect-timeout 2 -m 3 https://icanhazip.com 2>/dev/null; }
+_read_ip_links() { ip -o link show up 2>/dev/null; }
+_read_route_table() { netstat -rn -f inet 2>/dev/null; }
+
+# read_ping -> latency in milliseconds, empty when unavailable.
+read_ping() {
+  if is_linux; then
+    ping_ms_from_output "$(_read_ping_linux)"
+  elif is_macos; then
+    ping_ms_from_output "$(_read_ping_macos)"
+  fi
+}
+
+# read_connections -> count of established connections.
+read_connections() {
+  count_established "$(_read_netstat_an)"
+}
+
+# read_public_ip -> the public IPv4 address, empty when unavailable.
+read_public_ip() {
+  valid_ipv4 "$(_read_public_ip)"
+}
+
+# read_vpn -> the active VPN interface name, empty when none.
+read_vpn() {
+  if is_macos; then
+    vpn_from_routes_macos "$(_read_route_table)"
+  elif is_linux; then
+    vpn_from_links_linux "$(_read_ip_links)"
+  fi
+}
 _read_netstat() { netstat -ib 2>/dev/null; }
 _default_iface_linux() { ip route show default 2>/dev/null | awk '/default/ { print $5; exit }'; }
 _default_iface_macos() { route -n get default 2>/dev/null | awk '/interface:/ { print $2; exit }'; }
@@ -87,5 +147,20 @@ export -f _read_proc_net_dev
 export -f _read_netstat
 export -f _default_iface_linux
 export -f _default_iface_macos
+export -f ping_ms_from_output
+export -f count_established
+export -f valid_ipv4
+export -f vpn_from_links_linux
+export -f vpn_from_routes_macos
+export -f _read_ping_linux
+export -f _read_ping_macos
+export -f _read_netstat_an
+export -f _read_public_ip
+export -f _read_ip_links
+export -f _read_route_table
 export -f default_iface
 export -f read_counters
+export -f read_ping
+export -f read_connections
+export -f read_public_ip
+export -f read_vpn

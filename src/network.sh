@@ -60,6 +60,17 @@ network_refresh() {
   cache_set rx_raw "${rx}"
   cache_set tx_raw "${tx}"
   cache_set sample_ts "${now}"
+
+  # Cheap local probes always run; network-calling probes are opt-in.
+  cache_set vpn "$(read_vpn)"
+  cache_set connections "$(read_connections)"
+  if [[ "$(get_tmux_option "@net_revamped_ping_enabled" "0")" == "1" ]]; then
+    cache_set ping "$(read_ping)"
+  fi
+  if [[ "$(get_tmux_option "@net_revamped_public_ip_enabled" "0")" == "1" ]]; then
+    cache_set public_ip "$(read_public_ip)"
+  fi
+  return 0
 }
 
 network_tick() {
@@ -82,6 +93,10 @@ main() {
     speed)    net_render_speed "$(cache_get download)" "$(cache_get upload)" ;;
     fg_color) net_render_fg "$(cache_get total)" ;;
     bg_color) net_render_bg "$(cache_get total)" ;;
+    vpn)      net_render_text "$(cache_get vpn)" ;;
+    connections) net_render_text "$(cache_get connections)" ;;
+    ping)     net_render_ping "$(cache_get ping)" ;;
+    public_ip) net_render_text "$(cache_get public_ip)" ;;
     *)        return 0 ;;
   esac
 }

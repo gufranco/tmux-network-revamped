@@ -14,6 +14,10 @@ placeholders=(
   "\#{net_speed}"
   "\#{net_fg_color}"
   "\#{net_bg_color}"
+  "\#{net_vpn}"
+  "\#{net_connections}"
+  "\#{net_ping}"
+  "\#{net_public_ip}"
 )
 
 commands=(
@@ -22,6 +26,10 @@ commands=(
   "#(${NET_CMD} speed)"
   "#(${NET_CMD} fg_color)"
   "#(${NET_CMD} bg_color)"
+  "#(${NET_CMD} vpn)"
+  "#(${NET_CMD} connections)"
+  "#(${NET_CMD} ping)"
+  "#(${NET_CMD} public_ip)"
 )
 
 interpolate() {

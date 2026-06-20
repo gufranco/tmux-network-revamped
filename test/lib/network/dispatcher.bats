@@ -11,6 +11,10 @@ setup() {
   NET_RX=1000
   NET_TX=2000
   read_counters() { echo "${NET_RX} ${NET_TX}"; }
+  read_vpn() { echo "wg0"; }
+  read_connections() { echo "12"; }
+  read_ping() { echo "9"; }
+  read_public_ip() { echo "198.51.100.9"; }
 }
 
 teardown() {
@@ -75,6 +79,39 @@ teardown() {
   main refresh
   run main speed
   [[ "${output}" == "0B/s 0B/s" ]]
+}
+
+@test "network.sh dispatcher - refresh caches vpn and connections" {
+  export MOCK_EPOCH=1000
+  network_refresh
+  [[ "$(cache_get vpn)" == "wg0" ]]
+  [[ "$(cache_get connections)" == "12" ]]
+}
+
+@test "network.sh dispatcher - ping and public_ip are opt-in" {
+  export MOCK_EPOCH=1000
+  network_refresh
+  [[ -z "$(cache_get ping)" ]]
+  set_tmux_option "@net_revamped_ping_enabled" "1"
+  set_tmux_option "@net_revamped_public_ip_enabled" "1"
+  network_refresh
+  [[ "$(cache_get ping)" == "9" ]]
+  [[ "$(cache_get public_ip)" == "198.51.100.9" ]]
+}
+
+@test "network.sh dispatcher - vpn, connections, ping subcommands render" {
+  cache_set vpn "wg0"
+  cache_set connections "12"
+  cache_set ping "9"
+  run main vpn
+  [[ "${output}" == "wg0" ]]
+  run main connections
+  [[ "${output}" == "12" ]]
+  run main ping
+  [[ "${output}" == "9ms" ]]
+  cache_set public_ip "198.51.100.9"
+  run main public_ip
+  [[ "${output}" == "198.51.100.9" ]]
 }
 
 @test "network.sh dispatcher - unknown subcommand produces no output" {

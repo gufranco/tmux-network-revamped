@@ -22,6 +22,10 @@ Built from
 | `#{net_speed}` | download and upload together |
 | `#{net_fg_color}` | foreground color for the current tier |
 | `#{net_bg_color}` | background color for the current tier |
+| `#{net_vpn}` | active VPN interface, empty when none |
+| `#{net_connections}` | count of established connections |
+| `#{net_ping}` | latency to 8.8.8.8, opt-in |
+| `#{net_public_ip}` | public IPv4 address, opt-in |
 
 ## Install
 
@@ -44,6 +48,9 @@ Press `prefix + I` to install.
 | `@net_revamped_medium_thresh` | `100` | total kilobytes per second for the medium tier |
 | `@net_revamped_high_thresh` | `1000` | total kilobytes per second for the high tier |
 | `@net_revamped_{low,medium,high}_{fg,bg}_color` | empty | tier colors |
+| `@net_revamped_ping_enabled` | `0` | set to `1` to probe ping latency (makes a network call) |
+| `@net_revamped_ping_format` | `%sms` | format for the ping latency |
+| `@net_revamped_public_ip_enabled` | `0` | set to `1` to fetch the public IP (makes a network call) |
 | `@net_revamped_enable_logging` | `0` | set to `1` to log under `~/.tmux/network-revamped-logs` |
 
 ## Support by platform and architecture

@@ -54,3 +54,10 @@ teardown() {
   set_tmux_option "@net_revamped_low_bg_color" "#[bg=green]"
   [[ "$(net_render_bg 1024)" == "#[bg=green]" ]]
 }
+
+@test "render.sh - net_render_ping formats with default and custom" {
+  [[ -z "$(net_render_ping "")" ]]
+  [[ "$(net_render_ping 9)" == "9ms" ]]
+  set_tmux_option "@net_revamped_ping_format" "ping %sms"
+  [[ "$(net_render_ping 9)" == "ping 9ms" ]]
+}
