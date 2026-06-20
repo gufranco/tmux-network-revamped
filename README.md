@@ -1,5 +1,7 @@
 # tmux-network-revamped
 
+[![Tests](https://github.com/gufranco/tmux-network-revamped/actions/workflows/tests.yml/badge.svg)](https://github.com/gufranco/tmux-network-revamped/actions/workflows/tests.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Network throughput in your tmux status bar, without ever blocking the status
 render.
 
@@ -44,10 +46,12 @@ Press `prefix + I` to install.
 | `@net_revamped_{low,medium,high}_{fg,bg}_color` | empty | tier colors |
 | `@net_revamped_enable_logging` | `0` | set to `1` to log under `~/.tmux/network-revamped-logs` |
 
-## Platform support
+## Support by platform and architecture
 
-macOS reads `netstat -ib`, Linux reads `/proc/net/dev`. The default interface is
-detected with `route` on macOS and `ip route` on Linux.
+Works on every supported platform and architecture with built-in tools, no extra
+package required. macOS (Intel and Apple Silicon) reads `netstat -ib`; Linux
+(x86_64 and arm64) reads `/proc/net/dev`. The default interface is detected with
+`route` on macOS and `ip route` on Linux.
 
 ## License
 
