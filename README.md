@@ -26,6 +26,7 @@ Built from
 | `#{net_connections}` | count of established connections |
 | `#{net_ping}` | latency to 8.8.8.8, opt-in |
 | `#{net_public_ip}` | public IPv4 address, opt-in |
+| `#{net_wifi}` | wifi signal strength in dBm, for example `-55dBm` |
 
 ## Install
 
@@ -51,6 +52,7 @@ Press `prefix + I` to install.
 | `@net_revamped_ping_enabled` | `0` | set to `1` to probe ping latency (makes a network call) |
 | `@net_revamped_ping_format` | `%sms` | format for the ping latency |
 | `@net_revamped_public_ip_enabled` | `0` | set to `1` to fetch the public IP (makes a network call) |
+| `@net_revamped_wifi_format` | `%sdBm` | format for the wifi signal |
 | `@net_revamped_enable_logging` | `0` | set to `1` to log under `~/.tmux/network-revamped-logs` |
 
 ## Support by platform and architecture
@@ -59,6 +61,10 @@ Works on every supported platform and architecture with built-in tools, no extra
 package required. macOS (Intel and Apple Silicon) reads `netstat -ib`; Linux
 (x86_64 and arm64) reads `/proc/net/dev`. The default interface is detected with
 `route` on macOS and `ip route` on Linux.
+
+Wifi signal reads `system_profiler SPAirPortDataType` on macOS, which works without
+the `airport` binary Apple removed in macOS 14.4, and `/proc/net/wireless` on
+Linux. It reports RSSI in dBm; closer to zero is stronger.
 
 ## License
 

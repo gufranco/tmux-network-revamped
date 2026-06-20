@@ -77,6 +77,16 @@ vpn_from_routes_macos() {
   printf '%s\n' "${1}" | grep -oE '(utun|tun|tap|ipsec|ppp)[0-9]+' | head -1
 }
 
+# wifi_from_sp_macos TEXT -> RSSI in dBm from `system_profiler SPAirPortDataType`.
+wifi_from_sp_macos() {
+  printf '%s\n' "${1}" | grep -m1 'Signal / Noise' | grep -oE -- '-[0-9]+' | head -1
+}
+
+# wifi_from_proc_wireless TEXT -> RSSI in dBm from /proc/net/wireless.
+wifi_from_proc_wireless() {
+  printf '%s\n' "${1}" | awk 'NR>2 { gsub(/[^0-9-]/, "", $4); print $4; exit }'
+}
+
 # Host-probe seams.
 _read_proc_net_dev() { cat /proc/net/dev 2>/dev/null; }
 _read_ping_linux() { ping -c 1 -w 1 8.8.8.8 2>/dev/null; }
@@ -85,6 +95,17 @@ _read_netstat_an() { netstat -an 2>/dev/null; }
 _read_public_ip() { curl -sf --connect-timeout 2 -m 3 https://icanhazip.com 2>/dev/null; }
 _read_ip_links() { ip -o link show up 2>/dev/null; }
 _read_route_table() { netstat -rn -f inet 2>/dev/null; }
+_read_sp_airport() { system_profiler SPAirPortDataType 2>/dev/null; }
+_read_proc_wireless() { cat /proc/net/wireless 2>/dev/null; }
+
+# read_wifi -> wifi RSSI in dBm, empty when unavailable.
+read_wifi() {
+  if is_macos; then
+    wifi_from_sp_macos "$(_read_sp_airport)"
+  elif is_linux; then
+    wifi_from_proc_wireless "$(_read_proc_wireless)"
+  fi
+}
 
 # read_ping -> latency in milliseconds, empty when unavailable.
 read_ping() {
@@ -152,15 +173,20 @@ export -f count_established
 export -f valid_ipv4
 export -f vpn_from_links_linux
 export -f vpn_from_routes_macos
+export -f wifi_from_sp_macos
+export -f wifi_from_proc_wireless
 export -f _read_ping_linux
 export -f _read_ping_macos
 export -f _read_netstat_an
 export -f _read_public_ip
 export -f _read_ip_links
 export -f _read_route_table
+export -f _read_sp_airport
+export -f _read_proc_wireless
 export -f default_iface
 export -f read_counters
 export -f read_ping
 export -f read_connections
 export -f read_public_ip
 export -f read_vpn
+export -f read_wifi

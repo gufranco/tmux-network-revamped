@@ -18,6 +18,7 @@ placeholders=(
   "\#{net_connections}"
   "\#{net_ping}"
   "\#{net_public_ip}"
+  "\#{net_wifi}"
 )
 
 commands=(
@@ -30,6 +31,7 @@ commands=(
   "#(${NET_CMD} connections)"
   "#(${NET_CMD} ping)"
   "#(${NET_CMD} public_ip)"
+  "#(${NET_CMD} wifi)"
 )
 
 interpolate() {

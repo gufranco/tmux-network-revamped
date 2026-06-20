@@ -59,10 +59,19 @@ net_render_ping() {
   printf "${fmt}" "${1}"
 }
 
+net_render_wifi() {
+  [[ -z "${1}" ]] && { echo ""; return 0; }
+  local fmt
+  fmt=$(get_tmux_option "@net_revamped_wifi_format" "%sdBm")
+  # shellcheck disable=SC2059
+  printf "${fmt}" "${1}"
+}
+
 export -f _net_level
 export -f _net_total_level
 export -f net_render_text
 export -f net_render_ping
+export -f net_render_wifi
 export -f net_render_speed
 export -f net_render_fg
 export -f net_render_bg

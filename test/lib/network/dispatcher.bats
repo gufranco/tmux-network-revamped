@@ -15,6 +15,7 @@ setup() {
   read_connections() { echo "12"; }
   read_ping() { echo "9"; }
   read_public_ip() { echo "198.51.100.9"; }
+  read_wifi() { echo "-55"; }
 }
 
 teardown() {
@@ -81,11 +82,18 @@ teardown() {
   [[ "${output}" == "0B/s 0B/s" ]]
 }
 
-@test "network.sh dispatcher - refresh caches vpn and connections" {
+@test "network.sh dispatcher - refresh caches vpn, connections, wifi" {
   export MOCK_EPOCH=1000
   network_refresh
   [[ "$(cache_get vpn)" == "wg0" ]]
   [[ "$(cache_get connections)" == "12" ]]
+  [[ "$(cache_get wifi)" == "-55" ]]
+}
+
+@test "network.sh dispatcher - wifi subcommand renders the cache" {
+  cache_set wifi "-55"
+  run main wifi
+  [[ "${output}" == "-55dBm" ]]
 }
 
 @test "network.sh dispatcher - ping and public_ip are opt-in" {

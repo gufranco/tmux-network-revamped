@@ -61,3 +61,10 @@ teardown() {
   set_tmux_option "@net_revamped_ping_format" "ping %sms"
   [[ "$(net_render_ping 9)" == "ping 9ms" ]]
 }
+
+@test "render.sh - net_render_wifi formats with default and custom" {
+  [[ -z "$(net_render_wifi "")" ]]
+  [[ "$(net_render_wifi -55)" == "-55dBm" ]]
+  set_tmux_option "@net_revamped_wifi_format" "wifi %s"
+  [[ "$(net_render_wifi -55)" == "wifi -55" ]]
+}

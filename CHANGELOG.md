@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - VPN interface `#{net_vpn}` and established-connection count `#{net_connections}`,
   both from cheap local probes that always run.
+- Wifi signal strength `#{net_wifi}` in dBm, from system_profiler on macOS and
+  /proc/net/wireless on Linux.
 - Opt-in `#{net_ping}` latency and `#{net_public_ip}`, gated behind options since
   they make network calls, and run only inside the background worker.
 

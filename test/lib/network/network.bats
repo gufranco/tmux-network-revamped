@@ -140,6 +140,28 @@ teardown() {
   [[ "$(read_vpn)" == "wg0" ]]
 }
 
+@test "network.sh - wifi_from_sp_macos extracts the RSSI" {
+  [[ "$(wifi_from_sp_macos '            Signal / Noise: -55 dBm / -90 dBm')" == "-55" ]]
+  [[ -z "$(wifi_from_sp_macos 'no wifi here')" ]]
+}
+
+@test "network.sh - wifi_from_proc_wireless extracts the level" {
+  local txt=$'Inter-| sta\n face | tus | link level\n wlan0: 0000   70.  -45.  -256'
+  [[ "$(wifi_from_proc_wireless "${txt}")" == "-45" ]]
+}
+
+@test "network.sh - read_wifi reads system_profiler on macOS" {
+  _PLATFORM_OS_CACHE="Darwin"
+  _read_sp_airport() { echo "        Signal / Noise: -60 dBm / -92 dBm"; }
+  [[ "$(read_wifi)" == "-60" ]]
+}
+
+@test "network.sh - read_wifi reads /proc/net/wireless on Linux" {
+  _PLATFORM_OS_CACHE="Linux"
+  _read_proc_wireless() { printf 'h1\nh2\n wlan0: 0000 70. -50. -256\n'; }
+  [[ "$(read_wifi)" == "-50" ]]
+}
+
 @test "network.sh - host-probe seams are callable" {
   run _read_proc_net_dev
   run _read_netstat
@@ -148,6 +170,8 @@ teardown() {
   run _read_ping_macos
   run _read_ip_links
   run _read_route_table
+  run _read_proc_wireless
+  run _read_sp_airport
   run _default_iface_linux
   run _default_iface_macos
   true

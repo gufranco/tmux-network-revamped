@@ -64,6 +64,7 @@ network_refresh() {
   # Cheap local probes always run; network-calling probes are opt-in.
   cache_set vpn "$(read_vpn)"
   cache_set connections "$(read_connections)"
+  cache_set wifi "$(read_wifi)"
   if [[ "$(get_tmux_option "@net_revamped_ping_enabled" "0")" == "1" ]]; then
     cache_set ping "$(read_ping)"
   fi
@@ -94,6 +95,7 @@ main() {
     fg_color) net_render_fg "$(cache_get total)" ;;
     bg_color) net_render_bg "$(cache_get total)" ;;
     vpn)      net_render_text "$(cache_get vpn)" ;;
+    wifi)     net_render_wifi "$(cache_get wifi)" ;;
     connections) net_render_text "$(cache_get connections)" ;;
     ping)     net_render_ping "$(cache_get ping)" ;;
     public_ip) net_render_text "$(cache_get public_ip)" ;;
