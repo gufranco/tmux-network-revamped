@@ -69,6 +69,58 @@ Press `prefix + I` to install.
 | `@net_revamped_wifi_format` | `%sdBm` | format for the wifi signal |
 | `@net_revamped_enable_logging` | `0` | set to `1` to log under `~/.tmux/network-revamped-logs` |
 
+## Theme color suggestions
+
+The defaults use the 16 ANSI color names, which the active terminal theme remaps, so the tiers match any theme out of the box. For exact hex values, copy one block below. Low traffic maps to green, medium to yellow, and high to red.
+
+### Catppuccin Mocha
+
+```tmux
+set -g @net_revamped_low_fg_color '#[fg=#a6e3a1]'
+set -g @net_revamped_medium_fg_color '#[fg=#f9e2af]'
+set -g @net_revamped_high_fg_color '#[fg=#f38ba8]'
+```
+
+### Dracula
+
+```tmux
+set -g @net_revamped_low_fg_color '#[fg=#50fa7b]'
+set -g @net_revamped_medium_fg_color '#[fg=#f1fa8c]'
+set -g @net_revamped_high_fg_color '#[fg=#ff5555]'
+```
+
+### Nord
+
+```tmux
+set -g @net_revamped_low_fg_color '#[fg=#a3be8c]'
+set -g @net_revamped_medium_fg_color '#[fg=#ebcb8b]'
+set -g @net_revamped_high_fg_color '#[fg=#bf616a]'
+```
+
+### Gruvbox Dark
+
+```tmux
+set -g @net_revamped_low_fg_color '#[fg=#b8bb26]'
+set -g @net_revamped_medium_fg_color '#[fg=#fabd2f]'
+set -g @net_revamped_high_fg_color '#[fg=#fb4934]'
+```
+
+### Tokyo Night
+
+```tmux
+set -g @net_revamped_low_fg_color '#[fg=#9ece6a]'
+set -g @net_revamped_medium_fg_color '#[fg=#e0af68]'
+set -g @net_revamped_high_fg_color '#[fg=#f7768e]'
+```
+
+### Solarized Dark
+
+```tmux
+set -g @net_revamped_low_fg_color '#[fg=#859900]'
+set -g @net_revamped_medium_fg_color '#[fg=#b58900]'
+set -g @net_revamped_high_fg_color '#[fg=#dc322f]'
+```
+
 ## Support by platform and architecture
 
 Works on every supported platform and architecture with built-in tools, no extra

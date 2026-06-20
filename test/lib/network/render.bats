@@ -55,6 +55,66 @@ teardown() {
   [[ "$(net_render_bg 1024)" == "#[bg=green]" ]]
 }
 
+@test "render.sh - net_render_fg passes an ANSI name through verbatim" {
+  set_tmux_option "@net_revamped_high_fg_color" "#[fg=red]"
+  run net_render_fg 2097152
+  [[ "${output}" == *"#[fg=red]"* ]]
+}
+
+@test "render.sh - net_render_fg passes a 256-color spec through verbatim" {
+  set_tmux_option "@net_revamped_high_fg_color" "#[fg=colour203]"
+  run net_render_fg 2097152
+  [[ "${output}" == *"#[fg=colour203]"* ]]
+}
+
+@test "render.sh - net_render_fg passes a hex spec through verbatim" {
+  set_tmux_option "@net_revamped_high_fg_color" "#[fg=#f38ba8]"
+  run net_render_fg 2097152
+  [[ "${output}" == *"#[fg=#f38ba8]"* ]]
+}
+
+@test "render.sh - net_render_fg passes a combined fg/bg hex spec through verbatim" {
+  set_tmux_option "@net_revamped_high_fg_color" "#[fg=#f38ba8,bg=#1e1e2e]"
+  run net_render_fg 2097152
+  [[ "${output}" == *"#[fg=#f38ba8,bg=#1e1e2e]"* ]]
+}
+
+@test "render.sh - net_render_fg passes a bright ANSI name through verbatim" {
+  set_tmux_option "@net_revamped_high_fg_color" "#[fg=brightred]"
+  run net_render_fg 2097152
+  [[ "${output}" == *"#[fg=brightred]"* ]]
+}
+
+@test "render.sh - net_render_bg passes an ANSI name through verbatim" {
+  set_tmux_option "@net_revamped_low_bg_color" "#[fg=red]"
+  run net_render_bg 1024
+  [[ "${output}" == *"#[fg=red]"* ]]
+}
+
+@test "render.sh - net_render_bg passes a 256-color spec through verbatim" {
+  set_tmux_option "@net_revamped_low_bg_color" "#[fg=colour203]"
+  run net_render_bg 1024
+  [[ "${output}" == *"#[fg=colour203]"* ]]
+}
+
+@test "render.sh - net_render_bg passes a hex spec through verbatim" {
+  set_tmux_option "@net_revamped_low_bg_color" "#[fg=#f38ba8]"
+  run net_render_bg 1024
+  [[ "${output}" == *"#[fg=#f38ba8]"* ]]
+}
+
+@test "render.sh - net_render_bg passes a combined fg/bg hex spec through verbatim" {
+  set_tmux_option "@net_revamped_low_bg_color" "#[fg=#f38ba8,bg=#1e1e2e]"
+  run net_render_bg 1024
+  [[ "${output}" == *"#[fg=#f38ba8,bg=#1e1e2e]"* ]]
+}
+
+@test "render.sh - net_render_bg passes a bright ANSI name through verbatim" {
+  set_tmux_option "@net_revamped_low_bg_color" "#[fg=brightred]"
+  run net_render_bg 1024
+  [[ "${output}" == *"#[fg=brightred]"* ]]
+}
+
 @test "render.sh - net_render_ping formats with default and custom" {
   [[ -z "$(net_render_ping "")" ]]
   [[ "$(net_render_ping 9)" == "9ms" ]]
