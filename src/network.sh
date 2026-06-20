@@ -65,6 +65,8 @@ network_refresh() {
   cache_set vpn "$(read_vpn)"
   cache_set connections "$(read_connections)"
   cache_set wifi "$(read_wifi)"
+  cache_set ip "$(read_lan_ip)"
+  cache_set vpn_name "$(read_vpn_name)"
   if [[ "$(get_tmux_option "@net_revamped_ping_enabled" "0")" == "1" ]]; then
     cache_set ping "$(read_ping)"
   fi
@@ -95,6 +97,8 @@ main() {
     fg_color) net_render_fg "$(cache_get total)" ;;
     bg_color) net_render_bg "$(cache_get total)" ;;
     vpn)      net_render_text "$(cache_get vpn)" ;;
+    vpn_name) net_render_text "$(cache_get vpn_name)" ;;
+    ip)       net_render_text "$(cache_get ip)" ;;
     wifi)     net_render_wifi "$(cache_get wifi)" ;;
     connections) net_render_text "$(cache_get connections)" ;;
     ping)     net_render_ping "$(cache_get ping)" ;;

@@ -8,9 +8,9 @@
 
 </div>
 
-**10** placeholders · **2** platforms · **105** tests · **95%+** coverage
+**12** placeholders · **2** platforms · **108** tests · **95%+** coverage
 
-Surfaces network throughput, VPN interface, established connections, ping latency, public IP, and wifi signal in your tmux status bar. A detached background worker reads interface byte counters and computes the rate; the status line reads the formatted result from a tmux server user-option and returns instantly. Previous counters live in tmux options too, so the delta needs no temp file.
+Surfaces network throughput, VPN interface and name, LAN IP, established connections, ping latency, public IP, and wifi signal in your tmux status bar. A detached background worker reads interface byte counters and computes the rate; the status line reads the formatted result from a tmux server user-option and returns instantly. Previous counters live in tmux options too, so the delta needs no temp file.
 
 Built from [tmux-plugin-template](https://github.com/gufranco/tmux-plugin-template).
 
@@ -21,7 +21,7 @@ Built from [tmux-plugin-template](https://github.com/gufranco/tmux-plugin-templa
 </tr>
 <tr>
 <td><strong>Cross-platform</strong><br/>macOS and Linux on both Intel and ARM with built-in tools, no extra package.</td>
-<td><strong>Tested</strong><br/>105 [bats](https://github.com/bats-core/bats-core) tests hold 95%+ coverage across every probe.</td>
+<td><strong>Tested</strong><br/>108 [bats](https://github.com/bats-core/bats-core) tests hold 95%+ coverage across every probe.</td>
 </tr>
 </table>
 
@@ -35,6 +35,8 @@ Built from [tmux-plugin-template](https://github.com/gufranco/tmux-plugin-templa
 | `#{net_fg_color}` | foreground color for the current tier |
 | `#{net_bg_color}` | background color for the current tier |
 | `#{net_vpn}` | active VPN interface, empty when none |
+| `#{net_vpn_name}` | human VPN connection name, needs `scutil` on macOS or `nmcli` on Linux |
+| `#{net_ip}` | LAN IPv4 of the active interface |
 | `#{net_connections}` | count of established connections |
 | `#{net_ping}` | latency to 8.8.8.8, opt-in |
 | `#{net_public_ip}` | public IPv4 address, opt-in |

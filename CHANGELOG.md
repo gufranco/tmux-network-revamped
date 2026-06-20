@@ -5,6 +5,15 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-06-20
+
+### Added
+
+- LAN IPv4 `#{net_ip}` of the active interface, from `ipconfig getifaddr` on
+  macOS and `ip addr show` on Linux.
+- Human VPN connection name `#{net_vpn_name}`, from `scutil --nc list` on macOS
+  and `nmcli` on Linux. Both run as cheap local probes that always refresh.
+
 ## [1.1.0] - 2026-06-20
 
 ### Added

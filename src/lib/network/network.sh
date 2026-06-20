@@ -87,6 +87,21 @@ wifi_from_proc_wireless() {
   printf '%s\n' "${1}" | awk 'NR>2 { gsub(/[^0-9-]/, "", $4); print $4; exit }'
 }
 
+# ipv4_from_ip_addr TEXT -> the IPv4 address from `ip addr show`, no prefix.
+ipv4_from_ip_addr() {
+  printf '%s\n' "${1}" | awk '$1 == "inet" { split($2, a, "/"); print a[1]; exit }'
+}
+
+# vpn_name_from_scutil TEXT -> the name of the connected VPN from `scutil --nc list`.
+vpn_name_from_scutil() {
+  printf '%s\n' "${1}" | awk -F'"' '/Connected/ { print $2; exit }'
+}
+
+# vpn_name_from_nmcli TEXT -> the NAME of the active vpn or wireguard connection.
+vpn_name_from_nmcli() {
+  printf '%s\n' "${1}" | awk -F: '$2 == "vpn" || $2 == "wireguard" { print $1; exit }'
+}
+
 # Host-probe seams.
 _read_proc_net_dev() { cat /proc/net/dev 2>/dev/null; }
 _read_ping_linux() { ping -c 1 -w 1 8.8.8.8 2>/dev/null; }
@@ -97,6 +112,12 @@ _read_ip_links() { ip -o link show up 2>/dev/null; }
 _read_route_table() { netstat -rn -f inet 2>/dev/null; }
 _read_sp_airport() { system_profiler SPAirPortDataType 2>/dev/null; }
 _read_proc_wireless() { cat /proc/net/wireless 2>/dev/null; }
+# shellcheck disable=SC2120
+_read_ifaddr_macos() { ipconfig getifaddr "${1}" 2>/dev/null; }
+# shellcheck disable=SC2120
+_read_ip_addr_linux() { ip addr show dev "${1}" 2>/dev/null; }
+_read_scutil_macos() { scutil --nc list 2>/dev/null; }
+_read_nmcli_active_linux() { nmcli -t -f NAME,TYPE connection show --active 2>/dev/null; }
 
 # read_wifi -> wifi RSSI in dBm, empty when unavailable.
 read_wifi() {
@@ -132,6 +153,27 @@ read_vpn() {
     vpn_from_routes_macos "$(_read_route_table)"
   elif is_linux; then
     vpn_from_links_linux "$(_read_ip_links)"
+  fi
+}
+
+# read_lan_ip -> the LAN IPv4 of the default interface, empty when none.
+read_lan_ip() {
+  local iface
+  iface=$(default_iface)
+  [[ -n "${iface}" ]] || { echo ""; return 0; }
+  if is_macos; then
+    _read_ifaddr_macos "${iface}"
+  elif is_linux; then
+    ipv4_from_ip_addr "$(_read_ip_addr_linux "${iface}")"
+  fi
+}
+
+# read_vpn_name -> the human VPN connection name, empty when none.
+read_vpn_name() {
+  if is_macos; then
+    vpn_name_from_scutil "$(_read_scutil_macos)"
+  elif is_linux; then
+    vpn_name_from_nmcli "$(_read_nmcli_active_linux)"
   fi
 }
 _read_netstat() { netstat -ib 2>/dev/null; }
@@ -175,6 +217,13 @@ export -f vpn_from_links_linux
 export -f vpn_from_routes_macos
 export -f wifi_from_sp_macos
 export -f wifi_from_proc_wireless
+export -f ipv4_from_ip_addr
+export -f vpn_name_from_scutil
+export -f vpn_name_from_nmcli
+export -f _read_ifaddr_macos
+export -f _read_ip_addr_linux
+export -f _read_scutil_macos
+export -f _read_nmcli_active_linux
 export -f _read_ping_linux
 export -f _read_ping_macos
 export -f _read_netstat_an
@@ -189,4 +238,6 @@ export -f read_ping
 export -f read_connections
 export -f read_public_ip
 export -f read_vpn
+export -f read_lan_ip
+export -f read_vpn_name
 export -f read_wifi

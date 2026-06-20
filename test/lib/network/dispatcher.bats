@@ -16,6 +16,8 @@ setup() {
   read_ping() { echo "9"; }
   read_public_ip() { echo "198.51.100.9"; }
   read_wifi() { echo "-55"; }
+  read_lan_ip() { echo "192.168.1.42"; }
+  read_vpn_name() { echo "Work VPN"; }
 }
 
 teardown() {
@@ -88,6 +90,22 @@ teardown() {
   [[ "$(cache_get vpn)" == "wg0" ]]
   [[ "$(cache_get connections)" == "12" ]]
   [[ "$(cache_get wifi)" == "-55" ]]
+}
+
+@test "network.sh dispatcher - refresh caches ip and vpn_name" {
+  export MOCK_EPOCH=1000
+  network_refresh
+  [[ "$(cache_get ip)" == "192.168.1.42" ]]
+  [[ "$(cache_get vpn_name)" == "Work VPN" ]]
+}
+
+@test "network.sh dispatcher - ip and vpn_name subcommands render" {
+  cache_set ip "192.168.1.42"
+  cache_set vpn_name "Work VPN"
+  run main ip
+  [[ "${output}" == "192.168.1.42" ]]
+  run main vpn_name
+  [[ "${output}" == "Work VPN" ]]
 }
 
 @test "network.sh dispatcher - wifi subcommand renders the cache" {

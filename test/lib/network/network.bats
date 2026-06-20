@@ -162,6 +162,55 @@ teardown() {
   [[ "$(read_wifi)" == "-50" ]]
 }
 
+@test "network.sh - ipv4_from_ip_addr strips the prefix length" {
+  local txt=$'2: eth0: <BROADCAST>\n    inet 192.168.1.42/24 brd 192.168.1.255 scope global eth0'
+  [[ "$(ipv4_from_ip_addr "${txt}")" == "192.168.1.42" ]]
+  [[ -z "$(ipv4_from_ip_addr 'no address here')" ]]
+}
+
+@test "network.sh - vpn_name_from_scutil extracts the connected name" {
+  local txt=$'* (Disconnected) AAAA PPP (PPP) "Office" [PPP:PPP]\n* (Connected) BBBB PPP (PPP) "MyVPN" [PPP:PPP]'
+  [[ "$(vpn_name_from_scutil "${txt}")" == "MyVPN" ]]
+  [[ -z "$(vpn_name_from_scutil '* (Disconnected) AAAA PPP "Office"')" ]]
+}
+
+@test "network.sh - vpn_name_from_nmcli extracts the vpn or wireguard name" {
+  [[ "$(vpn_name_from_nmcli $'eth0:ethernet\nWork VPN:vpn')" == "Work VPN" ]]
+  [[ "$(vpn_name_from_nmcli $'wg-home:wireguard')" == "wg-home" ]]
+  [[ -z "$(vpn_name_from_nmcli 'eth0:ethernet')" ]]
+}
+
+@test "network.sh - read_lan_ip reads ifconfig on macOS" {
+  _PLATFORM_OS_CACHE="Darwin"
+  default_iface() { echo "en0"; }
+  _read_ifaddr_macos() { echo "10.0.0.5"; }
+  [[ "$(read_lan_ip)" == "10.0.0.5" ]]
+}
+
+@test "network.sh - read_lan_ip parses ip addr on Linux" {
+  _PLATFORM_OS_CACHE="Linux"
+  default_iface() { echo "eth0"; }
+  _read_ip_addr_linux() { echo "    inet 192.168.1.42/24 brd 192.168.1.255 scope global eth0"; }
+  [[ "$(read_lan_ip)" == "192.168.1.42" ]]
+}
+
+@test "network.sh - read_lan_ip is empty without an interface" {
+  default_iface() { echo ""; }
+  [[ -z "$(read_lan_ip)" ]]
+}
+
+@test "network.sh - read_vpn_name reads scutil on macOS" {
+  _PLATFORM_OS_CACHE="Darwin"
+  _read_scutil_macos() { echo '* (Connected) BBBB PPP (PPP) "MyVPN" [PPP:PPP]'; }
+  [[ "$(read_vpn_name)" == "MyVPN" ]]
+}
+
+@test "network.sh - read_vpn_name reads nmcli on Linux" {
+  _PLATFORM_OS_CACHE="Linux"
+  _read_nmcli_active_linux() { printf 'eth0:ethernet\nWork VPN:vpn\n'; }
+  [[ "$(read_vpn_name)" == "Work VPN" ]]
+}
+
 @test "network.sh - host-probe seams are callable" {
   run _read_proc_net_dev
   run _read_netstat
@@ -174,5 +223,9 @@ teardown() {
   run _read_sp_airport
   run _default_iface_linux
   run _default_iface_macos
+  run _read_ifaddr_macos eth0
+  run _read_ip_addr_linux eth0
+  run _read_scutil_macos
+  run _read_nmcli_active_linux
   true
 }
