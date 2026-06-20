@@ -1,17 +1,29 @@
-# tmux-network-revamped
+<div align="center">
+
+<h1>tmux-network-revamped</h1>
+
+**Network throughput in your tmux status bar, without ever blocking the render.**
 
 [![Tests](https://github.com/gufranco/tmux-network-revamped/actions/workflows/tests.yml/badge.svg)](https://github.com/gufranco/tmux-network-revamped/actions/workflows/tests.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Network throughput in your tmux status bar, without ever blocking the status
-render.
+</div>
 
-Speed is the change in interface byte counters between two refreshes. A detached
-background worker reads the counters and computes the rate; the status line reads
-the formatted result from a tmux server user-option and returns instantly. The
-previous counters are kept in tmux options too, so the delta needs no temp file.
+**10** placeholders · **2** platforms · **105** tests · **95%+** coverage
 
-Built from
-[tmux-plugin-template](https://github.com/gufranco/tmux-plugin-template).
+Surfaces network throughput, VPN interface, established connections, ping latency, public IP, and wifi signal in your tmux status bar. A detached background worker reads interface byte counters and computes the rate; the status line reads the formatted result from a tmux server user-option and returns instantly. Previous counters live in tmux options too, so the delta needs no temp file.
+
+Built from [tmux-plugin-template](https://github.com/gufranco/tmux-plugin-template).
+
+<table>
+<tr>
+<td><strong>Non-blocking</strong><br/>The status line reads a cached value from a tmux user-option and returns instantly.</td>
+<td><strong>No temp files</strong><br/>Previous counters live in tmux options, so the rate delta needs no scratch file.</td>
+</tr>
+<tr>
+<td><strong>Cross-platform</strong><br/>macOS and Linux on both Intel and ARM with built-in tools, no extra package.</td>
+<td><strong>Tested</strong><br/>105 [bats](https://github.com/bats-core/bats-core) tests hold 95%+ coverage across every probe.</td>
+</tr>
+</table>
 
 ## Placeholders
 
@@ -65,6 +77,14 @@ package required. macOS (Intel and Apple Silicon) reads `netstat -ib`; Linux
 Wifi signal reads `system_profiler SPAirPortDataType` on macOS, which works without
 the `airport` binary Apple removed in macOS 14.4, and `/proc/net/wireless` on
 Linux. It reports RSSI in dBm; closer to zero is stronger.
+
+## Development
+
+```bash
+make test      # run the bats suite
+make lint      # shellcheck every script
+make coverage  # run the suite under kcov
+```
 
 ## License
 
