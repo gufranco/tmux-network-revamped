@@ -4,7 +4,7 @@
 
 **Network throughput in your tmux status bar, without ever blocking the render.**
 
-[![Tests](https://github.com/gufranco/tmux-network-revamped/actions/workflows/tests.yml/badge.svg)](https://github.com/gufranco/tmux-network-revamped/actions/workflows/tests.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)](CHANGELOG.md)
+[![Tests](https://github.com/tmux-revamped/tmux-network-revamped/actions/workflows/tests.yml/badge.svg)](https://github.com/tmux-revamped/tmux-network-revamped/actions/workflows/tests.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)](CHANGELOG.md)
 
 </div>
 
@@ -12,7 +12,7 @@
 
 Surfaces network throughput, VPN interface and name, LAN IP, established connections, ping latency, public IP, and wifi signal in your tmux status bar. A detached background worker reads interface byte counters and computes the rate; the status line reads the formatted result from a tmux server user-option and returns instantly. Previous counters live in tmux options too, so the delta needs no temp file.
 
-Built from [tmux-plugin-template](https://github.com/gufranco/tmux-plugin-template).
+Built from [tmux-plugin-template](https://github.com/tmux-revamped/tmux-plugin-template).
 
 <table>
 <tr>
@@ -48,7 +48,7 @@ Built from [tmux-plugin-template](https://github.com/gufranco/tmux-plugin-templa
 With [TPM](https://github.com/tmux-plugins/tpm):
 
 ```tmux
-set -g @plugin 'gufranco/tmux-network-revamped'
+set -g @plugin 'tmux-revamped/tmux-network-revamped'
 set -g status-right '#{net_fg_color}#{net_speed}'
 ```
 
