@@ -67,8 +67,19 @@ net_render_wifi() {
   printf "${fmt}" "${1}"
 }
 
+# net_render_online VALUE -> a configurable label for the reachability state.
+# Defaults are plain text so the status bar stays readable without a glyph font.
+net_render_online() {
+  if [[ "${1}" == "up" ]]; then
+    get_tmux_option "@net_revamped_online_up_text" "on"
+  else
+    get_tmux_option "@net_revamped_online_down_text" "off"
+  fi
+}
+
 export -f _net_level
 export -f _net_total_level
+export -f net_render_online
 export -f net_render_text
 export -f net_render_ping
 export -f net_render_wifi

@@ -128,3 +128,12 @@ teardown() {
   set_tmux_option "@net_revamped_wifi_format" "wifi %s"
   [[ "$(net_render_wifi -55)" == "wifi -55" ]]
 }
+
+@test "render.sh - net_render_online maps state with default and custom labels" {
+  [[ "$(net_render_online up)" == "on" ]]
+  [[ "$(net_render_online "")" == "off" ]]
+  set_tmux_option "@net_revamped_online_up_text" "UP"
+  set_tmux_option "@net_revamped_online_down_text" "DOWN"
+  [[ "$(net_render_online up)" == "UP" ]]
+  [[ "$(net_render_online down)" == "DOWN" ]]
+}

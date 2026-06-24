@@ -41,6 +41,7 @@ Built from [tmux-plugin-template](https://github.com/gufranco/tmux-plugin-templa
 | `#{net_ping}` | latency to 8.8.8.8, opt-in |
 | `#{net_public_ip}` | public IPv4 address, opt-in |
 | `#{net_wifi}` | wifi signal strength in dBm, for example `-55dBm` |
+| `#{net_online}` | reachability state, `on` or `off`, opt-in |
 
 ## Install
 
@@ -67,6 +68,9 @@ Press `prefix + I` to install.
 | `@net_revamped_ping_format` | `%sms` | format for the ping latency |
 | `@net_revamped_public_ip_enabled` | `0` | set to `1` to fetch the public IP (makes a network call) |
 | `@net_revamped_wifi_format` | `%sdBm` | format for the wifi signal |
+| `@net_revamped_online_enabled` | `0` | set to `1` to probe internet reachability over HTTP, which works where corporate firewalls drop ICMP (makes a network call) |
+| `@net_revamped_online_up_text` | `on` | label shown when reachable |
+| `@net_revamped_online_down_text` | `off` | label shown when not reachable |
 | `@net_revamped_enable_logging` | `0` | set to `1` to log under `~/.tmux/network-revamped-logs` |
 
 ## Theme color suggestions

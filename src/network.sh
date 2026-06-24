@@ -73,6 +73,9 @@ network_refresh() {
   if [[ "$(get_tmux_option "@net_revamped_public_ip_enabled" "0")" == "1" ]]; then
     cache_set public_ip "$(read_public_ip)"
   fi
+  if [[ "$(get_tmux_option "@net_revamped_online_enabled" "0")" == "1" ]]; then
+    cache_set online "$(read_online)"
+  fi
   return 0
 }
 
@@ -103,6 +106,7 @@ main() {
     connections) net_render_text "$(cache_get connections)" ;;
     ping)     net_render_ping "$(cache_get ping)" ;;
     public_ip) net_render_text "$(cache_get public_ip)" ;;
+    online)   net_render_online "$(cache_get online)" ;;
     *)        return 0 ;;
   esac
 }

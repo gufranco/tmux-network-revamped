@@ -67,6 +67,15 @@ valid_ipv4() {
   [[ "${ip}" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo "${ip}"
 }
 
+# online_from_probe RESULT -> "up" when a connectivity probe reported success: a
+# zero curl exit code, or a 2xx/3xx HTTP status. Empty otherwise.
+online_from_probe() {
+  case "${1}" in
+    0|2[0-9][0-9]|3[0-9][0-9]) echo "up" ;;
+    *)                         echo "" ;;
+  esac
+}
+
 # vpn_from_links_linux TEXT -> first VPN interface from `ip -o link show up`.
 vpn_from_links_linux() {
   printf '%s\n' "${1}" | grep -oE '(tun|tap|wg|ppp|nordlynx|tailscale)[0-9]*' | head -1
@@ -108,6 +117,11 @@ _read_ping_linux() { ping -c 1 -w 1 8.8.8.8 2>/dev/null; }
 _read_ping_macos() { ping -c 1 -t 1 8.8.8.8 2>/dev/null; }
 _read_netstat_an() { netstat -an 2>/dev/null; }
 _read_public_ip() { curl -sf --connect-timeout 2 -m 3 https://icanhazip.com 2>/dev/null; }
+_read_curl_status() {
+  curl -sf -o /dev/null --connect-timeout 2 -m 3 \
+    https://www.gstatic.com/generate_204 2>/dev/null
+  echo "$?"
+}
 _read_ip_links() { ip -o link show up 2>/dev/null; }
 _read_route_table() { netstat -rn -f inet 2>/dev/null; }
 _read_sp_airport() { system_profiler SPAirPortDataType 2>/dev/null; }
@@ -145,6 +159,19 @@ read_connections() {
 # read_public_ip -> the public IPv4 address, empty when unavailable.
 read_public_ip() {
   valid_ipv4 "$(_read_public_ip)"
+}
+
+# read_online -> "up" when the host can reach the internet, empty otherwise. An
+# HTTP probe is preferred because corporate networks often filter ICMP; ping is
+# the fallback when curl is unavailable.
+read_online() {
+  if command -v curl >/dev/null 2>&1; then
+    online_from_probe "$(_read_curl_status)"
+  else
+    local p
+    p=$(read_ping)
+    [[ -n "${p}" ]] && echo "up"
+  fi
 }
 
 # read_vpn -> the active VPN interface name, empty when none.
@@ -213,6 +240,7 @@ export -f _default_iface_macos
 export -f ping_ms_from_output
 export -f count_established
 export -f valid_ipv4
+export -f online_from_probe
 export -f vpn_from_links_linux
 export -f vpn_from_routes_macos
 export -f wifi_from_sp_macos
@@ -228,6 +256,7 @@ export -f _read_ping_linux
 export -f _read_ping_macos
 export -f _read_netstat_an
 export -f _read_public_ip
+export -f _read_curl_status
 export -f _read_ip_links
 export -f _read_route_table
 export -f _read_sp_airport
@@ -237,6 +266,7 @@ export -f read_counters
 export -f read_ping
 export -f read_connections
 export -f read_public_ip
+export -f read_online
 export -f read_vpn
 export -f read_lan_ip
 export -f read_vpn_name

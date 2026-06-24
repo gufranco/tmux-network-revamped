@@ -18,6 +18,7 @@ setup() {
   read_wifi() { echo "-55"; }
   read_lan_ip() { echo "192.168.1.42"; }
   read_vpn_name() { echo "Work VPN"; }
+  read_online() { echo "up"; }
 }
 
 teardown() {
@@ -138,6 +139,17 @@ teardown() {
   cache_set public_ip "198.51.100.9"
   run main public_ip
   [[ "${output}" == "198.51.100.9" ]]
+}
+
+@test "network.sh dispatcher - online is opt-in and renders the cache" {
+  export MOCK_EPOCH=1000
+  network_refresh
+  [[ -z "$(cache_get online)" ]]
+  set_tmux_option "@net_revamped_online_enabled" "1"
+  network_refresh
+  [[ "$(cache_get online)" == "up" ]]
+  run main online
+  [[ "${output}" == "on" ]]
 }
 
 @test "network.sh dispatcher - unknown subcommand produces no output" {

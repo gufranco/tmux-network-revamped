@@ -102,6 +102,32 @@ teardown() {
   [[ "$(vpn_from_links_linux '6: wg0: <UP>')" == "wg0" ]]
 }
 
+@test "network.sh - online_from_probe reads curl exit and HTTP codes" {
+  [[ "$(online_from_probe 0)" == "up" ]]
+  [[ "$(online_from_probe 204)" == "up" ]]
+  [[ "$(online_from_probe 301)" == "up" ]]
+  [[ -z "$(online_from_probe 7)" ]]
+  [[ -z "$(online_from_probe 000)" ]]
+}
+
+@test "network.sh - read_online uses the curl probe when curl exists" {
+  command() { [[ "$2" == "curl" ]] && return 0; builtin command "$@"; }
+  _read_curl_status() { echo "0"; }
+  [[ "$(read_online)" == "up" ]]
+}
+
+@test "network.sh - read_online is empty when the curl probe fails" {
+  command() { [[ "$2" == "curl" ]] && return 0; builtin command "$@"; }
+  _read_curl_status() { echo "28"; }
+  [[ -z "$(read_online)" ]]
+}
+
+@test "network.sh - read_online falls back to ping without curl" {
+  command() { [[ "$2" == "curl" ]] && return 1; builtin command "$@"; }
+  read_ping() { echo "12"; }
+  [[ "$(read_online)" == "up" ]]
+}
+
 @test "network.sh - vpn_from_routes_macos finds a utun interface" {
   [[ "$(vpn_from_routes_macos 'default 10.0.0.1 UGScg utun3')" == "utun3" ]]
 }
