@@ -5,6 +5,25 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-06-29
+
+### Added
+
+- `#{net_ssid}` shows the current Wi-Fi network name. macOS reads the
+  `system_profiler SPAirPortDataType` current-network block, and Linux prefers
+  `iwgetid -r` with an `iw dev link` fallback. Each probe is feature-detected
+  and the token is empty when no tool reports a network.
+- `#{net_online}` is now wired into the status interpolation, so the documented
+  reachability token renders.
+
+### Changed
+
+- The heavy opt-in probes `#{net_ping}`, `#{net_public_ip}`, and `#{net_online}`
+  refresh on their own intervals instead of the fast speed cadence. New options
+  `@net_revamped_ping_interval`, `@net_revamped_public_ip_interval`, and
+  `@net_revamped_online_interval` default to 15, 300, and 30 seconds, so speed
+  stays responsive while a slow probe no longer fires on every sample.
+
 ## [1.3.0] - 2026-06-23
 
 ### Added

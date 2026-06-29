@@ -21,6 +21,8 @@ placeholders=(
   "\#{net_ping}"
   "\#{net_public_ip}"
   "\#{net_wifi}"
+  "\#{net_ssid}"
+  "\#{net_online}"
 )
 
 commands=(
@@ -36,6 +38,8 @@ commands=(
   "#(${NET_CMD} ping)"
   "#(${NET_CMD} public_ip)"
   "#(${NET_CMD} wifi)"
+  "#(${NET_CMD} ssid)"
+  "#(${NET_CMD} online)"
 )
 
 interpolate() {

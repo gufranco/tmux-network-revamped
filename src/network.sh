@@ -27,6 +27,13 @@ network_max_age() {
   get_tmux_option "@net_revamped_interval" "2"
 }
 
+# net_probe_max_age PROBE DEFAULT -> the per-probe refresh interval in seconds.
+# Heavy probes share the speed worker but read their own interval option so each
+# refreshes on a longer schedule than the fast speed sample.
+net_probe_max_age() {
+  get_tmux_option "@net_revamped_${1}_interval" "${2}"
+}
+
 net_interface() {
   local i
   i=$(get_tmux_option "@net_revamped_interface" "")
@@ -61,20 +68,22 @@ network_refresh() {
   cache_set tx_raw "${tx}"
   cache_set sample_ts "${now}"
 
-  # Cheap local probes always run; network-calling probes are opt-in.
+  # Cheap local probes always run; network-calling probes are opt-in and each
+  # keeps its own slower cadence so enabling one does not hammer it every tick.
   cache_set vpn "$(read_vpn)"
   cache_set connections "$(read_connections)"
   cache_set wifi "$(read_wifi)"
+  cache_set ssid "$(read_ssid)"
   cache_set ip "$(read_lan_ip)"
   cache_set vpn_name "$(read_vpn_name)"
   if [[ "$(get_tmux_option "@net_revamped_ping_enabled" "0")" == "1" ]]; then
-    cache_set ping "$(read_ping)"
+    cache_set_if_stale ping "$(net_probe_max_age ping 15)" read_ping
   fi
   if [[ "$(get_tmux_option "@net_revamped_public_ip_enabled" "0")" == "1" ]]; then
-    cache_set public_ip "$(read_public_ip)"
+    cache_set_if_stale public_ip "$(net_probe_max_age public_ip 300)" read_public_ip
   fi
   if [[ "$(get_tmux_option "@net_revamped_online_enabled" "0")" == "1" ]]; then
-    cache_set online "$(read_online)"
+    cache_set_if_stale online "$(net_probe_max_age online 30)" read_online
   fi
   return 0
 }
@@ -103,6 +112,7 @@ main() {
     vpn_name) net_render_text "$(cache_get vpn_name)" ;;
     ip)       net_render_text "$(cache_get ip)" ;;
     wifi)     net_render_wifi "$(cache_get wifi)" ;;
+    ssid)     net_render_text "$(cache_get ssid)" ;;
     connections) net_render_text "$(cache_get connections)" ;;
     ping)     net_render_ping "$(cache_get ping)" ;;
     public_ip) net_render_text "$(cache_get public_ip)" ;;

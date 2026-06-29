@@ -16,6 +16,7 @@ setup() {
   read_ping() { echo "9"; }
   read_public_ip() { echo "198.51.100.9"; }
   read_wifi() { echo "-55"; }
+  read_ssid() { echo "HomeWiFi"; }
   read_lan_ip() { echo "192.168.1.42"; }
   read_vpn_name() { echo "Work VPN"; }
   read_online() { echo "up"; }
@@ -31,6 +32,7 @@ teardown() {
   function_exists network_tick
   function_exists network_max_age
   function_exists net_interface
+  function_exists net_probe_max_age
 }
 
 @test "network.sh dispatcher - network_max_age default is 2" {
@@ -155,4 +157,71 @@ teardown() {
 @test "network.sh dispatcher - unknown subcommand produces no output" {
   run main bogus
   [[ -z "${output}" ]]
+}
+
+@test "network.sh dispatcher - net_probe_max_age default and option" {
+  [[ "$(net_probe_max_age ping 15)" == "15" ]]
+  set_tmux_option "@net_revamped_ping_interval" "42"
+  [[ "$(net_probe_max_age ping 15)" == "42" ]]
+}
+
+@test "network.sh dispatcher - refresh caches ssid" {
+  export MOCK_EPOCH=1000
+  network_refresh
+  [[ "$(cache_get ssid)" == "HomeWiFi" ]]
+}
+
+@test "network.sh dispatcher - ssid subcommand renders the cache" {
+  cache_set ssid "HomeWiFi"
+  run main ssid
+  [[ "${output}" == "HomeWiFi" ]]
+}
+
+@test "network.sh dispatcher - a heavy probe keeps its own slow interval" {
+  set_tmux_option "@net_revamped_ping_enabled" "1"
+  set_tmux_option "@net_revamped_ping_interval" "60"
+  export MOCK_EPOCH=1000
+  network_refresh
+  [[ "$(cache_get ping)" == "9" ]]
+  read_ping() { echo "99"; }
+  export MOCK_EPOCH=1010
+  network_refresh
+  [[ "$(cache_get ping)" == "9" ]]
+  export MOCK_EPOCH=1100
+  network_refresh
+  [[ "$(cache_get ping)" == "99" ]]
+}
+
+@test "network.sh dispatcher - public_ip refreshes only after its interval" {
+  set_tmux_option "@net_revamped_public_ip_enabled" "1"
+  set_tmux_option "@net_revamped_public_ip_interval" "300"
+  export MOCK_EPOCH=1000
+  network_refresh
+  [[ "$(cache_get public_ip)" == "198.51.100.9" ]]
+  read_public_ip() { echo "203.0.113.1"; }
+  export MOCK_EPOCH=1100
+  network_refresh
+  [[ "$(cache_get public_ip)" == "198.51.100.9" ]]
+  export MOCK_EPOCH=1400
+  network_refresh
+  [[ "$(cache_get public_ip)" == "203.0.113.1" ]]
+}
+
+@test "network.sh dispatcher - upload renders the cached rate" {
+  export MOCK_EPOCH=1000
+  run main upload
+  [ "$status" -eq 0 ]
+  [[ "$output" == "0B/s" ]]
+}
+
+@test "network.sh dispatcher - fg_color routes without error" {
+  export MOCK_EPOCH=1000
+  run main fg_color
+  [ "$status" -eq 0 ]
+}
+
+@test "network.sh dispatcher - bg_color routes without error" {
+  export MOCK_EPOCH=1000
+  run main bg_color
+  [ "$status" -eq 0 ]
 }

@@ -96,6 +96,23 @@ wifi_from_proc_wireless() {
   printf '%s\n' "${1}" | awk 'NR>2 { gsub(/[^0-9-]/, "", $4); print $4; exit }'
 }
 
+# ssid_from_sp_macos TEXT -> the current Wi-Fi network name from the
+# `system_profiler SPAirPortDataType` "Current Network Information" block. The
+# SSID is the indented label on the line right after the block header.
+ssid_from_sp_macos() {
+  printf '%s\n' "${1}" | awk '/Current Network Information:/ { getline line; sub(/^[[:space:]]+/, "", line); sub(/:[[:space:]]*$/, "", line); print line; exit }'
+}
+
+# ssid_from_iwgetid TEXT -> the SSID printed bare by `iwgetid -r`, trimmed.
+ssid_from_iwgetid() {
+  printf '%s\n' "${1}" | awk 'NR==1 { sub(/[[:space:]]+$/, "", $0); print; exit }'
+}
+
+# ssid_from_iw_link TEXT -> the SSID from an `iw dev <iface> link` "SSID:" line.
+ssid_from_iw_link() {
+  printf '%s\n' "${1}" | awk '/SSID:/ { sub(/^.*SSID:[[:space:]]*/, "", $0); print; exit }'
+}
+
 # ipv4_from_ip_addr TEXT -> the IPv4 address from `ip addr show`, no prefix.
 ipv4_from_ip_addr() {
   printf '%s\n' "${1}" | awk '$1 == "inet" { split($2, a, "/"); print a[1]; exit }'
@@ -126,6 +143,9 @@ _read_ip_links() { ip -o link show up 2>/dev/null; }
 _read_route_table() { netstat -rn -f inet 2>/dev/null; }
 _read_sp_airport() { system_profiler SPAirPortDataType 2>/dev/null; }
 _read_proc_wireless() { cat /proc/net/wireless 2>/dev/null; }
+_read_iwgetid() { iwgetid -r 2>/dev/null; }
+# shellcheck disable=SC2120
+_read_iw_dev_link() { iw dev "${1}" link 2>/dev/null; }
 # shellcheck disable=SC2120
 _read_ifaddr_macos() { ipconfig getifaddr "${1}" 2>/dev/null; }
 # shellcheck disable=SC2120
@@ -139,6 +159,21 @@ read_wifi() {
     wifi_from_sp_macos "$(_read_sp_airport)"
   elif is_linux; then
     wifi_from_proc_wireless "$(_read_proc_wireless)"
+  fi
+}
+
+# read_ssid -> the current Wi-Fi network name, empty when unavailable. macOS
+# reads the system_profiler current-network block. Linux prefers the bare
+# `iwgetid -r` output and falls back to parsing `iw dev link`. Each probe is
+# feature-detected: a missing tool makes its seam return empty.
+read_ssid() {
+  if is_macos; then
+    ssid_from_sp_macos "$(_read_sp_airport)"
+  elif is_linux; then
+    local s
+    s=$(ssid_from_iwgetid "$(_read_iwgetid)")
+    [[ -n "${s}" ]] && { echo "${s}"; return 0; }
+    ssid_from_iw_link "$(_read_iw_dev_link "$(default_iface)")"
   fi
 }
 
@@ -245,6 +280,9 @@ export -f vpn_from_links_linux
 export -f vpn_from_routes_macos
 export -f wifi_from_sp_macos
 export -f wifi_from_proc_wireless
+export -f ssid_from_sp_macos
+export -f ssid_from_iwgetid
+export -f ssid_from_iw_link
 export -f ipv4_from_ip_addr
 export -f vpn_name_from_scutil
 export -f vpn_name_from_nmcli
@@ -261,6 +299,8 @@ export -f _read_ip_links
 export -f _read_route_table
 export -f _read_sp_airport
 export -f _read_proc_wireless
+export -f _read_iwgetid
+export -f _read_iw_dev_link
 export -f default_iface
 export -f read_counters
 export -f read_ping
@@ -271,3 +311,4 @@ export -f read_vpn
 export -f read_lan_ip
 export -f read_vpn_name
 export -f read_wifi
+export -f read_ssid

@@ -4,11 +4,11 @@
 
 **Network throughput in your tmux status bar, without ever blocking the render.**
 
-[![Tests](https://github.com/tmux-revamped/tmux-network-revamped/actions/workflows/tests.yml/badge.svg)](https://github.com/tmux-revamped/tmux-network-revamped/actions/workflows/tests.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)](CHANGELOG.md)
+[![Tests](https://github.com/tmux-revamped/tmux-network-revamped/actions/workflows/tests.yml/badge.svg)](https://github.com/tmux-revamped/tmux-network-revamped/actions/workflows/tests.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)](CHANGELOG.md)
 
 </div>
 
-**12** placeholders · **2** platforms · **108** tests · **95%+** coverage
+**12** placeholders · **2** platforms · **143** tests · **95%+** coverage
 
 Surfaces network throughput, VPN interface and name, LAN IP, established connections, ping latency, public IP, and wifi signal in your tmux status bar. A detached background worker reads interface byte counters and computes the rate; the status line reads the formatted result from a tmux server user-option and returns instantly. Previous counters live in tmux options too, so the delta needs no temp file.
 
@@ -41,6 +41,7 @@ Built from [tmux-plugin-template](https://github.com/tmux-revamped/tmux-plugin-t
 | `#{net_ping}` | latency to 8.8.8.8, opt-in |
 | `#{net_public_ip}` | public IPv4 address, opt-in |
 | `#{net_wifi}` | wifi signal strength in dBm, for example `-55dBm` |
+| `#{net_ssid}` | current Wi-Fi network name, empty when unavailable |
 | `#{net_online}` | reachability state, `on` or `off`, opt-in |
 
 ## Install
@@ -66,11 +67,14 @@ Press `prefix + I` to install.
 | `@net_revamped_{low,medium,high}_{fg,bg}_color` | empty | tier colors |
 | `@net_revamped_ping_enabled` | `0` | set to `1` to probe ping latency (makes a network call) |
 | `@net_revamped_ping_format` | `%sms` | format for the ping latency |
+| `@net_revamped_ping_interval` | `15` | seconds between ping probes, independent of the speed sample |
 | `@net_revamped_public_ip_enabled` | `0` | set to `1` to fetch the public IP (makes a network call) |
+| `@net_revamped_public_ip_interval` | `300` | seconds between public IP fetches, independent of the speed sample |
 | `@net_revamped_wifi_format` | `%sdBm` | format for the wifi signal |
 | `@net_revamped_online_enabled` | `0` | set to `1` to probe internet reachability over HTTP, which works where corporate firewalls drop ICMP (makes a network call) |
 | `@net_revamped_online_up_text` | `on` | label shown when reachable |
 | `@net_revamped_online_down_text` | `off` | label shown when not reachable |
+| `@net_revamped_online_interval` | `30` | seconds between reachability probes, independent of the speed sample |
 | `@net_revamped_enable_logging` | `0` | set to `1` to log under `~/.tmux/network-revamped-logs` |
 
 ## Theme color suggestions

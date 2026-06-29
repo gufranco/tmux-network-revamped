@@ -253,5 +253,53 @@ teardown() {
   run _read_ip_addr_linux eth0
   run _read_scutil_macos
   run _read_nmcli_active_linux
+  run _read_iwgetid
+  run _read_iw_dev_link wlan0
   true
+}
+
+@test "network.sh - ssid_from_sp_macos reads the current network block" {
+  local txt=$'      Current Network Information:\n        HomeWiFi:\n          PHY Mode: 802.11ax\n      Other Local Wi-Fi Networks:\n        Neighbor:'
+  [[ "$(ssid_from_sp_macos "${txt}")" == "HomeWiFi" ]]
+  [[ -z "$(ssid_from_sp_macos 'no wifi block here')" ]]
+}
+
+@test "network.sh - ssid_from_iwgetid trims the bare ssid" {
+  [[ "$(ssid_from_iwgetid 'HomeWiFi')" == "HomeWiFi" ]]
+  [[ "$(ssid_from_iwgetid 'HomeWiFi   ')" == "HomeWiFi" ]]
+  [[ -z "$(ssid_from_iwgetid '')" ]]
+}
+
+@test "network.sh - ssid_from_iw_link extracts the SSID line" {
+  local txt=$'Connected to aa:bb (on wlan0)\n\tSSID: IwNet\n\tfreq: 5180'
+  [[ "$(ssid_from_iw_link "${txt}")" == "IwNet" ]]
+  [[ -z "$(ssid_from_iw_link 'no ssid here')" ]]
+}
+
+@test "network.sh - read_ssid reads system_profiler on macOS" {
+  _PLATFORM_OS_CACHE="Darwin"
+  _read_sp_airport() { printf '%s' $'      Current Network Information:\n        MacNet:\n          PHY Mode: 802.11ac'; }
+  [[ "$(read_ssid)" == "MacNet" ]]
+}
+
+@test "network.sh - read_ssid reads iwgetid on Linux" {
+  _PLATFORM_OS_CACHE="Linux"
+  _read_iwgetid() { echo "WgNet"; }
+  [[ "$(read_ssid)" == "WgNet" ]]
+}
+
+@test "network.sh - read_ssid falls back to iw dev link on Linux" {
+  _PLATFORM_OS_CACHE="Linux"
+  _read_iwgetid() { echo ""; }
+  default_iface() { echo "wlan0"; }
+  _read_iw_dev_link() { printf 'Connected\n\tSSID: FallbackNet\n'; }
+  [[ "$(read_ssid)" == "FallbackNet" ]]
+}
+
+@test "network.sh - read_ssid is empty when no tool reports an ssid" {
+  _PLATFORM_OS_CACHE="Linux"
+  _read_iwgetid() { echo ""; }
+  default_iface() { echo "wlan0"; }
+  _read_iw_dev_link() { echo ""; }
+  [[ -z "$(read_ssid)" ]]
 }
